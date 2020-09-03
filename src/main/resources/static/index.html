@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>博客</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css">
+  <link rel="stylesheet" href="./css/me.css">
+  <script src="js/jquery-3.3.1.min.js"></script>
+  <script src="js/semantic.min.js"></script>
+  <script src="js/vue.js"></script>
+  <script src="js/axios-0.18.0.js"></script>
+  <script src="js/common.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!--导航-->
+    <nav class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+      <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+          <h2 class="ui teal header item">Blog</h2>
+          <a href="./index.html" class=" m-item item m-mobile-hide active"><i class="mini home icon"></i>首页</a>
+          <a href="./types.html" class="m-item item m-mobile-hide"><i class="mini idea icon"></i>分类</a>
+          <a href="./tags.html" class="m-item item m-mobile-hide"><i class="mini tags icon"></i>标签</a>
+          <a href="./archives.html" class="m-item item m-mobile-hide"><i class="mini clone icon"></i>归档</a>
+          <a href="./about.html" class="m-item item m-mobile-hide"><i class="mini info icon"></i>关于我</a>
+          <div class="right m-item item m-mobile-hide">
+            <div class="ui icon inverted transparent input m-margin-tb-tiny">
+              <input type="text" placeholder="Search...." v-model="searchParam">
+              <i class="search link icon" @click="handleGlobalSearch()"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="#" class="ui menu toggle black icon button m-right-top m-mobile-show">
+        <i class="sidebar icon"></i>
+      </a>
+    </nav>
+
+    <!--中间内容-->
+    <div class="m-container m-padded-tb-big animated fadeIn">
+      <div class="ui container">
+        <div class="ui stackable grid">
+          <!--左边博客列表-->
+          <div class="eleven wide column">
+            <!--header-->
+            <div class="ui top attached segment">
+              <div class="ui middle aligned two column grid">
+                <div class="column">
+                  <h3 class="ui teal header">博客</h3>
+                </div>
+                <div class="right aligned column">
+                  共 <h2 class="ui orange header m-inline-block m-text-thin">{{blogInfo.total}}</h2> 篇
+                </div>
+              </div>
+            </div>
+
+            <!--content-->
+            <div class="ui attached segment">
+              <div class="ui padded vertical segment m-padded-tb-large" v-for="b in blogInfo.list">
+                <div class="ui middle aligned mobile reversed stackable grid">
+                  <div class="eleven wide column">
+                    <h3 class="ui header">
+                      <a :href="'./blog.html?uri=/blog/selectById/'+b.id" target="_blank"
+                         class="m-black">{{b.title}}</a>
+                    </h3>
+                    <p class="m-text">{{b.description + '......'}}</p>
+                    <div class="ui grid">
+                      <div class="eleven wide column">
+                        <div class="ui mini horizontal link list">
+                          <div class="item">
+                            <img :src="b.user.avatar" alt="" class="ui avatar image">
+                            <div class="content">
+                              <a href="#" class="header">{{b.user.nickname}}</a>
+                            </div>
+                          </div>
+                          <div class="item">
+                            <i class="calendar icon"></i><span>{{b.updateTime?b.updateTime:b.createTime}}</span>
+                          </div>
+                          <div class="item">
+                            <i class="eye icon"></i> <span>{{b.views}}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="right aligned five wide column">
+                        <a href="#" target="_blank" class="ui teal basic label m-padded-tiny m-text-thin">{{b.type.typeName}}</a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="five wide column">
+                    <a :href="'./blog.html?uri=/blog/selectById/'+b.id" target="_blank">
+                      <img :src="b.firstPicture" alt=""
+                           class="ui rounded image">
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+              <!--/*-->
+              <!--*/-->
+            </div>
+
+            <!--footer-->
+            <div class="ui bottom attached segment">
+              <div class="ui middle aligned two column grid">
+                <div class="column">
+                  <a
+                    :class="{'ui':true,'mini':true,'teal':true,'basic':true,'button':true,'disabled':!blogInfo.hasPreviousPage}"
+                    @click="blogInfo.hasPreviousPage ? getBlogInfo(buildPageParam(blogInfo.prePage,blogInfo.pageSize,blogInfo.navigatePages)):''">上一页</a>
+                </div>
+                <div class="right aligned column">
+                  <a
+                    :class="{'ui':true,'mini':true,'teal':true,'basic':true,'button':true,'disabled':!blogInfo.hasNextPage}"
+                    @click="blogInfo.hasNextPage ? getBlogInfo(buildPageParam(blogInfo.nextPage,blogInfo.pageSize,blogInfo.navigatePages)):''">下一页</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!--右边的top-->
+          <div class="five wide column">
+
+            <!--分类-->
+            <div class="ui segments">
+              <div class="ui secondary segment">
+                <div class="ui two column grid">
+                  <div class="column">
+                    <i class="idea icon"></i>分类
+                  </div>
+                  <div class="right aligned column">
+                    <a :href="'./types.html'" target="_blank">more <i class="angle double right icon"></i></a>
+                  </div>
+                </div>
+              </div>
+              <div class="ui teal segment">
+                <div class="ui fluid vertical menu">
+                  <a target="_blank" class="item" v-for="t in typeInfo"
+                     :href="'./types.html?uri=/blog/selectByTypeId/'+t.id">
+                    <span>{{t.typeName}}</span>
+                    <div class="ui teal basic left pointing label">{{t.blogCount}}</div>
+                  </a>
+                  <!--/*-->
+                  <!--*/-->
+                </div>
+              </div>
+            </div>
+
+            <!--标签-->
+            <div class="ui segments m-margin-top-large">
+              <div class="ui secondary segment">
+                <div class="ui two column grid">
+                  <div class="column">
+                    <i class="tags icon"></i>标签
+                  </div>
+                  <div class="right aligned column">
+                    <a :href="'./tags.html'" target="_blank">more <i class="angle double right icon"></i></a>
+                  </div>
+                </div>
+              </div>
+              <div class="ui teal segment">
+                <a target="_blank" class="ui teal basic left pointing label m-margin-tb-tiny" v-for="t in tagInfo"
+                   :href="'./tags.html?uri=/blog/selectByTagId/'+t.id">
+                  <span>{{t.name}}</span>
+                  <div class="detail">{{t.blogCount}}</div>
+                </a>
+                <!--/*-->
+                <!--*/-->
+              </div>
+            </div>
+
+            <!--最新推荐-->
+            <div class="ui segments m-margin-top-large">
+              <div class="ui secondary segment ">
+                <i class="bookmark icon"></i>最新推荐
+              </div>
+              <div class="ui segment" v-for="b in topBlogInfo">
+                <a target="_blank" class="m-black m-text-thin" :href="'./blog.html?uri=/blog/selectById/'+b.id">{{b.title}}</a>
+              </div>
+              <!--/*-->
+              <!--*/-->
+            </div>
+
+            <!--二维码-->
+            <h4 class="ui horizontal divider header m-margin-top-large">扫码关注我</h4>
+            <div class="ui centered card" style="width: 11em">
+              <img src="./images/pure_wechat.jpg" alt="" class="ui rounded image">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <br>
+    <br>
+
+    <!--底部footer-->
+    <footer class="ui inverted vertical segment m-padded-tb-massive">
+      <div class="ui center aligned container">
+        <div class="ui inverted divided stackable grid">
+          <div class="three wide column">
+            <div class="ui inverted link list">
+              <div class="item">
+                <img src="./images/pure_wechat.jpg" class="ui rounded image" alt=""
+                     style="width: 110px">
+              </div>
+            </div>
+          </div>
+          <div class="three wide column">
+            <h4 class="ui inverted header m-text-thin m-text-spaced ">最新博客</h4>
+            <div class="ui inverted link list">
+              <a :href="'./blog.html?uri=/blog/selectById/'+b.id" class="item m-text-thin"
+                 v-for="b in footer.topBlogInfo" target="_blank">{{b.title}}</a>
+            </div>
+          </div>
+          <div class="three wide column">
+            <h4 class="ui inverted header m-text-thin m-text-spaced ">联系我</h4>
+            <div class="ui inverted link list">
+              <a href="#" class="item m-text-thin">Email：1061410032@qq.com</a>
+              <a href="#" class="item m-text-thin">QQ：1061410032</a>
+            </div>
+          </div>
+          <div class="seven wide column">
+            <h4 class="ui inverted header m-text-thin m-text-spaced ">Blog</h4>
+            <p class="m-text-thin m-text-spaced m-opacity-mini">这是我的个人博客、会分享关于编程、写作、思考相关的任何内容，希望可以给来到这儿的人有所帮助...</p>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <p class="m-text-thin m-text-spaced m-opacity-tiny">Copyright © 2019 - 2020 Blog Designed by NaviChiong</p>
+      </div>
+    </footer>
+  </div>
+  <script>
+      let app = new Vue({
+          el: "#app",
+          data: {
+              blogInfo: "",
+              typeInfo: "",
+              tagInfo: "",
+              topBlogInfo: "",
+              searchParam: "",
+              footer: {
+                  topBlogInfo: ""
+              }
+          },
+          methods: {
+              getBlogInfo(pageParam) {
+                  axios.get(apiPrefix + "/blog/selectAll", {params: pageParam})
+                      .then(resp => {
+                          console.log("index -> ", resp);
+                          if (resp.data.code === 200) {
+                              app.blogInfo = resp.data.data;
+                          }
+                      })
+              },
+              getTypeInfo(size) {
+                  if (!size) {
+                      size = 5;
+                  }
+                  axios.get(apiPrefix + "/type/topType", {params: size})
+                      .then(resp => {
+                          console.log("/type/topType -> ", resp);
+                          if (resp.data.code === 200) {
+                              app.typeInfo = resp.data.data;
+                          }
+                      })
+              },
+              buildPageParam(pageNum, pageSize, navigatePages) {
+                  if (!pageNum) {
+                      pageNum = 1;
+                  }
+                  if (!pageSize) {
+                      pageSize = 5;
+                  }
+                  if (!navigatePages) {
+                      navigatePages = 5;
+                  }
+                  return {
+                      'pageNum': pageNum,
+                      'pageSize': pageSize,
+                      'navigatePages': navigatePages
+                  }
+              },
+              getTagInfo(size) {
+                  if (!size) {
+                      size = 5;
+                  }
+                  axios.get(apiPrefix + "/tag/topTag", {params: size})
+                      .then(resp => {
+                          console.log("/tag/topTag -> ", resp);
+                          if (resp.data.code === 200) {
+                              app.tagInfo = resp.data.data;
+                          }
+                      })
+              },
+              getTopBlogInfo(size) {
+                  if (!size) {
+                      size = 5;
+                  }
+                  axios.get(apiPrefix + "/blog/topBlog", {params: size})
+                      .then(resp => {
+                          console.log("/blog/topBlog -> ", resp);
+                          if (resp.data.code === 200) {
+                              app.topBlogInfo = resp.data.data;
+                          }
+                      })
+              },
+              handleGlobalSearch() {
+                  let sp = app.searchParam.trim();
+                  if (sp) {
+                      location.href = "./search.html?title=" + sp + "&content=" + sp;
+                  }
+                  console.log(url);
+              },
+              getFooterTopBlog() {
+                  axios.get(apiPrefix + "/blog/topBlog", {params: {size: 3}})
+                      .then(resp => {
+                          console.log("/blog/topBlog -> ", resp);
+                          if (resp.data.code === 200) {
+                              app.footer.topBlogInfo = resp.data.data;
+                          }
+                      })
+              }
+
+          },
+          created() {
+              this.getBlogInfo(this.buildPageParam(1, 5, 5));
+              this.getTypeInfo(5);
+              this.getTagInfo(5);
+              this.getTopBlogInfo(5);
+              this.getFooterTopBlog();
+          },
+          mounted() {
+              $('.menu.toggle').click(function () {
+                  $('.m-item').toggleClass('m-mobile-hide');
+              });
+          }
+      })
+  </script>
+</body>
+</html>

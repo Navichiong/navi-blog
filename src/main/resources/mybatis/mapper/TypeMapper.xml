@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 名称空间： 接口的全类名，相当于告诉MyBatis这个配置文件是实现哪个接口的；-->
+<mapper namespace="com.lwc.naviblog.dao.TypeDao">
+
+    <resultMap id="countMap" type="com.lwc.naviblog.vo.TypeVo">
+        <result column="id" property="id"/>
+        <result column="type_name" property="typeName"/>
+        <result column="blog_count" property="blogCount"/>
+    </resultMap>
+
+    <select id="selectBlogCountGroupByType" resultMap="countMap">
+        select t.id,t.type_name, count(tb.title) blog_count
+        from t_type t
+                 left join t_blog tb on t.id = tb.type_id
+        group by t.id
+        order by blog_count desc
+        <if test="size!=null">
+            limit #{size,jdbcType=INTEGER};
+        </if>
+    </select>
+
+</mapper>

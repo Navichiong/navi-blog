@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 名称空间： 接口的全类名，相当于告诉MyBatis这个配置文件是实现哪个接口的；-->
+<mapper namespace="com.lwc.naviblog.dao.BlogDao">
+
+    <resultMap id="map1" type="com.lwc.naviblog.model.Blog">
+        <id column="id" property="id"/>
+        <result column="appreciation" property="appreciation"/>
+        <result column="commentabled" property="commentabled"/>
+        <result column="content" property="content"/>
+        <result column="create_time" property="createTime"/>
+        <result column="description" property="description"/>
+        <result column="first_picture" property="firstPicture"/>
+        <result column="flag" property="flag"/>
+        <result column="published" property="published"/>
+        <result column="recommend" property="recommend"/>
+        <result column="share_statement" property="shareStatement"/>
+        <result column="title" property="title"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="views" property="views"/>
+        <result column="type_id" property="typeId"/>
+    </resultMap>
+
+
+    <update id="updateTypeIdById">
+        update t_blog
+        set type_id = #{typeId,jdbcType=INTEGER}
+        where id = #{blogId,jdbcType=INTEGER}
+    </update>
+
+    <select id="topBlogBySzie" resultType="com.lwc.naviblog.model.Blog">
+        select id, title
+        from t_blog
+        where recommend = true
+          and published = true
+        order by update_time
+        limit #{size,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectByTagId" resultMap="map1">
+        SELECT b.*
+        FROM t_blog_tags bt
+                 LEFT JOIN t_blog b ON b.`id` = bt.`blog_id`
+        WHERE bt.`tag_id` = #{tagId,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectYears" resultType="java.lang.String">
+        SELECT DISTINCT DATE_FORMAT(create_time, '%Y') years
+        FROM t_blog
+    </select>
+
+    <select id="selectByYear" resultMap="map1">
+        SELECT *
+        FROM t_blog
+        WHERE DATE_FORMAT(create_time, '%Y') = #{year,jdbcType=VARCHAR}
+    </select>
+
+</mapper>

@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/blog
+    driver-class-name: com.mysql.jdbc.Driver
+
+mybatis-plus:
+  #type-enums-package: com.lwc.naviblog.entity.enums
+  configuration:
+    lazy-loading-enabled: true
+    aggressive-lazy-loading: false
+  mapper-locations: classpath*:mybatis/mapper/*.xml
+  global-config:
+    db-config:
+      table-prefix: t_
+      id-type: auto
+
+logging:
+  level:
+    root: info
+    com.lwc.naviblog: debug
+  file:
+    path: E:\Maven\exercise_project\navi-blog\log
+    name: navi_blog.log
+
+pagehelper:
+  reasonable: true
+  helper-dialect: mysql

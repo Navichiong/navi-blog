@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增标签</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css">
+  <link rel="stylesheet" href="../lib/editormd/css/editormd.min.css">
+  <link rel="stylesheet" href="../css/me.css">
+  <script src="../js/vue.js"></script>
+  <script src="../js/axios-0.18.0.js"></script>
+  <script src="../js/jquery-3.3.1.min.js"></script>
+  <script src="../js/semantic.min.js"></script>
+  <script src="../js/common.js"></script>
+</head>
+<body>
+
+  <div id="app">
+    <!--导航-->
+    <nav class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+      <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+          <h2 class="ui teal header item">管理后台</h2>
+          <a href="./blogs.html" class="m-item item m-mobile-hide"><i class="mini home icon"></i>博客</a>
+          <a href="./types.html" class=" m-item item m-mobile-hide"><i class="mini idea icon"></i>分类</a>
+          <a href="./tags.html" class="m-item item m-mobile-hide active"><i class="mini tags icon"></i>标签</a>
+          <div class="right m-item m-mobile-hide menu">
+            <div class="ui dropdown  item">
+              <div class="text">
+                <img class="ui avatar image" :src="user.avatar">
+                {{user.nickname}}
+              </div>
+              <i class="dropdown icon"></i>
+              <div class="menu">
+                <button class="item" @click="logout()">注销</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="ui attached pointing menu">
+      <div class="ui container">
+        <div class="right menu">
+          <a href="./tag-input.html" class="teal item active">新增</a>
+          <a href="./tags.html" class="item">列表</a>
+        </div>
+      </div>
+    </div>
+
+    <!--中间内容-->
+    <div class="m-container-small m-padded-tb-big">
+      <div class="ui container">
+        <form class="ui form">
+          <input type="hidden" name="id">
+          <div class=" field">
+            <div class="ui left labeled input">
+              <label class="ui teal basic label">名称</label>
+              <input type="text" name="name" placeholder="标签名称" v-model="tag.name" @blur="verifyTag()">
+            </div>
+          </div>
+
+          <div class="ui error message "></div>
+
+          <div class="ui negative message" v-if="checkTag">
+            <i class="close icon" @click="closeMessage()"></i>
+            <div class="header">{{checkTag.msg}}</div>
+            <p v-if="checkTag.id != null">{{checkTag.id}}</p>
+            <p v-if="checkTag.name != null">{{checkTag.name}}</p>
+          </div>
+
+          <div class="ui right aligned container">
+            <button type="button" class="ui button" onclick="window.history.go(-1)">返回</button>
+            <button class="ui teal submit button" type="button" @click="saveTag()">提交</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <!--底部footer-->
+    <footer class="ui inverted vertical segment m-padded-tb-massive">
+      <div class="ui center aligned container">
+        <div class="ui inverted divided stackable grid">
+          <div class="three wide column">
+            <div class="ui inverted link list">
+              <div class="item">
+                <img src="../images/pure_wechat.jpg" class="ui rounded image" alt=""
+                     style="width: 110px">
+              </div>
+            </div>
+          </div>
+          <div class="three wide column">
+            <h4 class="ui inverted header m-text-thin m-text-spaced ">最新博客</h4>
+            <div class="ui inverted link list">
+              <a :href="'../blog.html?uri=/blog/selectById/'+b.id" class="item m-text-thin"
+                 v-for="b in footer.topBlogInfo" target="_blank">{{b.title}}</a>
+            </div>
+          </div>
+          <div class="three wide column">
+            <h4 class="ui inverted header m-text-thin m-text-spaced ">联系我</h4>
+            <div class="ui inverted link list">
+              <a href="#" class="item m-text-thin">Email：1061410032@qq.com</a>
+              <a href="#" class="item m-text-thin">QQ：1061410032</a>
+            </div>
+          </div>
+          <div class="seven wide column">
+            <h4 class="ui inverted header m-text-thin m-text-spaced ">Blog</h4>
+            <p class="m-text-thin m-text-spaced m-opacity-mini">这是我的个人博客、会分享关于编程、写作、思考相关的任何内容，希望可以给来到这儿的人有所帮助...</p>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <p class="m-text-thin m-text-spaced m-opacity-tiny">Copyright © 2019 - 2020 Blog Designed by NaviChiong</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+      let app = new Vue({
+          el: "#app",
+          data: {
+              user: {},
+              tag: {
+                  id: "",
+                  typeName: ""
+              },
+              checkTag: "",
+              footer: {
+                  topBlogInfo: ""
+              }
+          },
+          methods: {
+              logout: logout,
+              getCurrentUser() {
+                  axios.get(apiPrefix + '/admin/currentUser')
+                      .then(resp => {
+                          console.log(resp);
+                          if (resp.data.code === 200) {
+                              app.user = resp.data.data;
+                          }
+                      })
+                      .catch(resp => {
+                          location.href = apiPrefix + "/admin/login.html";
+                      })
+              },
+              updateById() {
+                  axios.put(apiPrefix + "/admin/tag/updateById", this.tag)
+                      .then(resp => {
+                          console.log("update tag -> ", resp);
+                          if (resp.data.code === 200) {
+                              alert("修改成功");
+                              location.href = apiPrefix + "/admin/tags.html";
+                          } else {
+                              // 修改失败：标签重复
+                              alert(resp.data.msg);
+                              app.checkTag = {};
+                              app.checkTag.msg = resp.data.msg;
+                          }
+                      })
+                      .catch(error => {
+                          // 参数非法
+                          console.log(error.response);
+                          if (error.response.data.code === 400) {
+                              app.checkTag = {};
+                              app.checkTag = error.response.data.data;
+                          }
+                      })
+              },
+              selectById(uri) {
+                  axios.get(apiPrefix + uri)
+                      .then(resp => {
+                          console.log("selectById -> ", resp);
+                          app.tag = resp.data.data;
+                      })
+              },
+              saveTag() {
+                  if (!this.verifyTag()) {
+                      return;
+                  }
+                  if (this.tag.id) {
+                      this.updateById()
+                  } else {
+                      this.addTag();
+                  }
+              },
+              addTag() {
+                  axios.post(apiPrefix + "/admin/tag/addTag", this.tag)
+                      .then(resp => {
+                          console.log("addTag -> ", resp);
+                          if (resp.data.code === 200) {
+                              alert("添加成功");
+                              location.href = apiPrefix + "/admin/tags.html";
+                          } else {
+                              // 添加失败：标签重复
+                              alert(resp.data.msg);
+                              app.checkTag = {};
+                              app.checkTag.msg = resp.data.msg;
+                          }
+                      })
+                      .catch(error => {
+                          // 参数非法
+                          console.log(error.response);
+                          if (error.response.data.code === 400) {
+                              app.checkTag = {};
+                              app.checkTag = error.response.data.data;
+                          }
+                      })
+              },
+              verifyTag() {
+                  if (!this.tag.name) {
+                      this.checkTag = {
+                          name: "标签名不能为空"
+                      };
+                      return false;
+                  }
+                  this.checkTag = "";
+                  return true;
+              },
+              closeMessage() {
+                  // 关闭消息提示
+                  this.msg = null;
+                  this.checkTag = null;
+              },
+              getFooterTopBlog() {
+                  axios.get(apiPrefix + "/blog/topBlog", {params: {size: 3}})
+                      .then(resp => {
+                          console.log("/blog/topBlog -> ", resp);
+                          if (resp.data.code === 200) {
+                              app.footer.topBlogInfo = resp.data.data;
+                          }
+                      })
+              }
+
+          },
+          created() {
+              this.getFooterTopBlog();
+              this.getCurrentUser();
+              let request = getRequestParam(location.search);
+              console.log("Parse url parameters -> ", request);
+              if (request.uri) {
+                  this.selectById(request.uri)
+              }
+          },
+          mounted() {
+              $('.menu.toggle').click(function () {
+                  $('.m-item').toggleClass('m-mobile-hide');
+              });
+
+              $('.ui.dropdown').dropdown({
+                  on: 'hover'
+              });
+          }
+      });
+  </script>
+</body>
+</html>

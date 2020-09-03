@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 名称空间： 接口的全类名，相当于告诉MyBatis这个配置文件是实现哪个接口的；-->
+<mapper namespace="com.lwc.naviblog.dao.SysUserDao">
+
+    <resultMap id="authMap" type="com.lwc.naviblog.model.SysUser">
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="nickname" column="nickname"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="type" column="type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="status" column="status"/>
+        <collection property="roles"
+                    column="id"
+                    ofType="com.lwc.naviblog.model.SysRole"
+                    fetchType="eager"
+                    select="com.lwc.naviblog.dao.SysRoleDao.selectByUserId"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="authMap">
+
+        select *
+        from t_sys_user
+        where username = #{username,jdbcType=VARCHAR}
+
+    </select>
+
+</mapper>

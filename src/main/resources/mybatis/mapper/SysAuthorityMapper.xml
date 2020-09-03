@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 名称空间： 接口的全类名，相当于告诉MyBatis这个配置文件是实现哪个接口的；-->
+<mapper namespace="com.lwc.naviblog.dao.SysAuthorityDao">
+
+    <select id="selectByRoleId" resultType="com.lwc.naviblog.model.SysAuthority">
+        SELECT a.*
+        FROM t_sys_authority a
+                 LEFT JOIN t_role_authority ra ON a.`id` = ra.`authority_id`
+        WHERE ra.`role_id` = #{roleId,jdbcType=INTEGER};
+    </select>
+
+</mapper>
